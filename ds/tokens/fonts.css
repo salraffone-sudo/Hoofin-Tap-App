@@ -1,0 +1,80 @@
+/* Webfonts: Roboto, Roboto Serif (from style guide); Stardos Stencil (nearest Google match for the OAC stencil display letterforms) */
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: italic;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(../assets/fonts/roboto-400-italic.woff2) format('woff2');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(../assets/fonts/roboto-400.woff2) format('woff2');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 500;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(../assets/fonts/roboto-500.woff2) format('woff2');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 700;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(../assets/fonts/roboto-700.woff2) format('woff2');
+}
+
+@font-face {
+  font-family: 'Roboto Serif';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(../assets/fonts/roboto-serif-400.woff2) format('woff2');
+}
+
+@font-face {
+  font-family: 'Roboto Serif';
+  font-style: normal;
+  font-weight: 600;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(../assets/fonts/roboto-serif-600.woff2) format('woff2');
+}
+
+@font-face {
+  font-family: 'Roboto Serif';
+  font-style: normal;
+  font-weight: 700;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(../assets/fonts/roboto-serif-700.woff2) format('woff2');
+}
+
+@font-face {
+  font-family: 'Stardos Stencil';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(../assets/fonts/stardos-stencil-400.woff2) format('woff2');
+}
+
+@font-face {
+  font-family: 'Stardos Stencil';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(../assets/fonts/stardos-stencil-700.woff2) format('woff2');
+}

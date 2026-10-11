@@ -1,0 +1,22 @@
+/* OAC base element styles */
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+  line-height: var(--leading-body);
+  color: var(--text-body);
+  background: var(--surface-page);
+  margin: 0;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  color: var(--text-heading);
+  line-height: var(--leading-heading);
+  margin: 0 0 var(--space-3);
+}
+
+a { color: var(--link); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:hover { color: var(--link-hover); }
+
+::selection { background: var(--oac-blue-light); color: var(--oac-navy); }

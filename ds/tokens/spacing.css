@@ -1,0 +1,33 @@
+/* OAC spacing, radii, borders, shadows, motion */
+
+:root {
+  /* Spacing — 4px base */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* Radii — engineering-drawing crispness: near-square corners */
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: 6px;
+  --radius-pill: 999px;
+
+  /* Borders */
+  --border-hairline: 1px solid var(--border-default);
+  --border-rule: 1.5px solid var(--border-strong);
+
+  /* Shadows — flat, drafting-table restraint */
+  --shadow-card: 0 1px 2px rgba(67, 67, 67, 0.12);
+  --shadow-raised: 0 2px 8px rgba(67, 67, 67, 0.18);
+  --shadow-overlay: 0 8px 28px rgba(67, 67, 67, 0.28);
+
+  /* Motion — quick, precise, no bounce */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1); /* @kind other */
+  --duration-fast: 120ms; /* @kind other */
+  --duration-base: 200ms; /* @kind other */
+}

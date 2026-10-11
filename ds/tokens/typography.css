@@ -1,0 +1,29 @@
+/* OAC typography tokens — Roboto (body) + Roboto Serif (headline) per style guide.
+   Stardos Stencil substitutes for the stencil letterforms of the OAC logomark (flagged). */
+
+:root {
+  --font-body: 'Roboto', system-ui, sans-serif;
+  --font-display: 'Roboto Serif', Georgia, serif;
+  --font-stencil: 'Stardos Stencil', var(--font-display);
+
+  /* Scale */
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-md: 16px;
+  --text-lg: 20px;
+  --text-xl: 26px;
+  --text-2xl: 34px;
+  --text-3xl: 46px;
+
+  --leading-tight: 1.15;
+  --leading-heading: 1.25;
+  --leading-body: 1.6;
+
+  --tracking-caps: 0.08em;   /* stencil / label caps */
+  --tracking-wide: 0.14em;   /* eyebrow labels, INSPIRATION-style headers */
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+}

@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hoofin': The Tap App</title>
+<meta name="description" content="An audio-first rhythm tap trainer. The phone listens, keeps time, and gives feedback.">
+<meta name="theme-color" content="#F4F1EA">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Hoofin'">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/tokens/fonts.css">
+<link rel="stylesheet" href="ds/tokens/colors.css">
+<link rel="stylesheet" href="ds/tokens/typography.css">
+<link rel="stylesheet" href="ds/tokens/spacing.css">
+<link rel="stylesheet" href="ds/tokens/base.css">
+<link rel="stylesheet" href="ds/styles.css">
+<script src="ds/_ds_bundle.js"></script>
+<script src="hoofin-engine.js"></script>
+<style>html,body{margin:0;background:#F4F1EA;overscroll-behavior:none;-webkit-tap-highlight-color:transparent}a{color:#1F4A73}a:hover{color:#9E2A22}</style>
+</helmet>
+<div style="--accent-primary:#1F4A73;--surface-accent:#D6E4F1;--text-body:#2F3B47;--text-heading:#1F4A73;--accent-danger:#9E2A22;--border-strong:#2F3B47;--border-default:#DDD7CB;--surface-page:#F4F1EA;--text-muted:#66707A;width:100%;max-width:520px;margin:0 auto;height:100dvh;box-sizing:border-box;padding-top:env(safe-area-inset-top);background:#F4F1EA;font-family:var(--font-body);color:#2F3B47;">
+<div style="position:relative;width:100%;height:100%;overflow:hidden;background:#F4F1EA;display:flex;flex-direction:column;">
+
+<sc-if value="{{ notInSession }}" hint-placeholder-val="{{ true }}">
+<div style="flex:none;display:flex;align-items:center;justify-content:space-between;padding:14px 22px 12px;">
+<div style="font-family:var(--font-stencil);font-size:26px;letter-spacing:0.06em;color:#1F4A73;">HOOFIN'</div>
+<div style="font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:#66707A;white-space:nowrap;">Level 1 · Beta</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ inSession }}">
+<div style="flex:none;padding:4px 20px 12px;display:flex;flex-direction:column;gap:10px;">
+<div style="display:flex;align-items:center;justify-content:space-between;">
+<button onClick="{{ endSession }}" style="all:unset;cursor:pointer;font-size:13px;font-weight:500;color:#66707A;padding:6px 0;white-space:nowrap;flex:none;">End session</button>
+<div style="font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:#66707A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;">{{ blockLabel }}</div>
+</div>
+<div style="display:flex;gap:4px;">
+<sc-for list="{{ segs }}" as="s" hint-placeholder-count="5"><div style="flex:1;height:4px;border-radius:2px;background:{{ s.bg }};"></div></sc-for>
+</div>
+</div>
+</sc-if>
+
+<div style="flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;">
+
+<sc-if value="{{ isBuilder }}" hint-placeholder-val="{{ true }}">
+<div style="padding:4px 20px 24px;display:flex;flex-direction:column;gap:18px;">
+<div style="display:flex;flex-direction:column;gap:6px;">
+<div style="font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:#66707A;">Today's practice</div>
+<h1 style="margin:0;font-family:var(--font-display);font-size:30px;line-height:1.15;font-weight:600;color:#1F4A73;text-wrap:pretty;">Let's get those feet talking.</h1>
+<div style="font-size:15px;color:#66707A;">{{ totalMin }} minutes · five short blocks</div>
+</div>
+<div style="background:#FFFFFF;border:1px solid #DDD7CB;border-radius:3px;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+<div style="display:flex;flex-direction:column;gap:4px;">
+<div style="font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:#9E2A22;">Focus step</div>
+<div style="font-family:var(--font-display);font-size:22px;font-weight:600;color:#2F3B47;">{{ focus.name }} <span style="font-family:var(--font-body);font-size:15px;font-weight:400;color:#66707A;">{{ focus.count }}</span></div>
+<div style="font-size:13px;color:#66707A;">Built from {{ focus.built }}</div>
+</div>
+<x-import component-from-global-scope="OACDesignSystem_d73471.Button" variant="secondary" size="sm" onClick="{{ openLibrary }}" hint-size="72px,32px">Change</x-import>
+</div>
+<div style="display:flex;flex-direction:column;border-top:1.5px solid #2F3B47;">
+<sc-for list="{{ blocks }}" as="b" hint-placeholder-count="5">
+<div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid #DDD7CB;">
+<div style="width:22px;font-family:var(--font-display);font-size:15px;color:#9E2A22;">{{ b.num }}</div>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;">
+<div style="font-size:16px;font-weight:500;">{{ b.name }}</div>
+<div style="font-size:13px;color:#66707A;text-wrap:pretty;">{{ b.desc }}</div>
+</div>
+<div style="display:flex;align-items:center;gap:4px;">
+<button onClick="{{ b.minus }}" style="all:unset;cursor:pointer;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:1px solid #DDD7CB;border-radius:3px;background:#FFFFFF;font-size:16px;color:#1F4A73;" style-hover="border-color:#1F4A73;">−</button>
+<div style="width:40px;text-align:center;font-size:14px;font-weight:500;">{{ b.min }} min</div>
+<button onClick="{{ b.plus }}" style="all:unset;cursor:pointer;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:1px solid #DDD7CB;border-radius:3px;background:#FFFFFF;font-size:16px;color:#1F4A73;" style-hover="border-color:#1F4A73;">+</button>
+</div>
+</div>
+</sc-for>
+</div>
+<div style="font-size:13px;line-height:1.55;color:#66707A;background:#E5DECC;padding:12px 14px;border-radius:3px;text-wrap:pretty;">Before you start: phone 1–2 meters away on a steady surface, mic facing you. Wired headphones or the phone speaker, not Bluetooth.</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isLibrary }}">
+<div style="padding:4px 20px 24px;display:flex;flex-direction:column;gap:20px;">
+<div style="display:flex;flex-direction:column;gap:6px;">
+<button onClick="{{ backToBuilder }}" style="all:unset;cursor:pointer;font-size:13px;font-weight:500;color:#1F4A73;">← Today's practice</button>
+<h1 style="margin:0;font-family:var(--font-display);font-size:30px;font-weight:600;color:#1F4A73;">Step library</h1>
+<div style="font-size:15px;color:#66707A;text-wrap:pretty;">Steps build on each other. When the pieces are solid, the next step opens up.</div>
+</div>
+<sc-for list="{{ library }}" as="g" hint-placeholder-count="4">
+<div style="display:flex;flex-direction:column;">
+<div style="display:flex;align-items:baseline;justify-content:space-between;border-bottom:1.5px solid #2F3B47;padding-bottom:6px;">
+<div style="font-family:var(--font-display);font-size:18px;font-weight:600;color:#1F4A73;">{{ g.group }}</div>
+<div style="font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:#66707A;white-space:nowrap;flex:none;">{{ g.summary }}</div>
+</div>
+<sc-for list="{{ g.items }}" as="it" hint-placeholder-count="3">
+<div onClick="{{ it.pick }}" style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #DDD7CB;cursor:{{ it.cursor }};opacity:{{ it.opacity }};">
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;">
+<div style="font-size:16px;font-weight:500;">{{ it.name }}</div>
+<sc-if value="{{ it.hasNote }}"><div style="font-size:12px;color:#66707A;">{{ it.note }}</div></sc-if>
+</div>
+<div style="font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:{{ it.color }};background:{{ it.bg }};padding:4px 8px;border-radius:2px;">{{ it.status }}</div>
+</div>
+</sc-for>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ isWarmup }}">
+<div style="padding:8px 20px 24px;display:flex;flex-direction:column;gap:20px;">
+<div style="display:flex;flex-direction:column;gap:6px;">
+<h1 style="margin:0;font-family:var(--font-display);font-size:30px;font-weight:600;color:#1F4A73;">Warm-up</h1>
+<div style="font-size:15px;color:#66707A;text-wrap:pretty;">Loosen your ankles and calves before you make any noise. Go easy.</div>
+</div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:24px 0;background:#FFFFFF;border:1px solid #DDD7CB;border-radius:3px;">
+<div style="font-family:var(--font-display);font-size:64px;font-weight:400;color:#2F3B47;font-variant-numeric:tabular-nums;line-height:1;">{{ warmClock }}</div>
+<x-import component-from-global-scope="OACDesignSystem_d73471.Button" variant="secondary" size="md" onClick="{{ toggleWarm }}" hint-size="120px,38px"><span style="white-space:nowrap;">{{ warmBtn }}</span></x-import>
+</div>
+<div style="display:flex;flex-direction:column;border-top:1.5px solid #2F3B47;">
+<sc-for list="{{ warmItems }}" as="w" hint-placeholder-count="3">
+<div onClick="{{ w.toggle }}" style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid #DDD7CB;cursor:pointer;">
+<div style="width:22px;height:22px;flex:none;border-radius:3px;border:1.5px solid #1F4A73;background:{{ w.bg }};color:#FFFFFF;font-size:13px;display:flex;align-items:center;justify-content:center;">{{ w.mark }}</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:2px;">
+<div style="font-size:16px;font-weight:500;">{{ w.name }}</div>
+<div style="font-size:13px;color:#66707A;">{{ w.detail }}</div>
+</div>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isDemo }}">
+<div style="padding:8px 20px 24px;display:flex;flex-direction:column;gap:16px;">
+<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;">
+<div style="display:flex;flex-direction:column;gap:4px;">
+<div style="font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:#66707A;">Watch + listen</div>
+<h1 style="margin:0;font-family:var(--font-display);font-size:30px;font-weight:600;color:#1F4A73;">{{ focus.name }} <span style="font-family:var(--font-body);font-size:18px;font-weight:400;color:#66707A;">{{ focus.count }}</span></h1>
+</div>
+<div style="display:flex;gap:6px;padding-bottom:4px;">
+<sc-for list="{{ focus.builtList }}" as="bf" hint-placeholder-count="2"><x-import component-from-global-scope="OACDesignSystem_d73471.Tag" hint-size="54px,24px">{{ bf }}</x-import></sc-for>
+</div>
+</div>
+<div style="background:#FFFFFF;border:1px solid #DDD7CB;border-radius:3px;padding:8px 6px 10px;">
+<x-import component-from-global-scope="HoofinFigure" step-id="{{ focusId }}" mirror="{{ mirror }}" follow="{{ follow }}" autoplay="{{ autoplay }}" speed="{{ speed }}" hint-size="100%,290px"></x-import>
+</div>
+<div style="display:flex;align-items:center;gap:10px;">
+<x-import component-from-global-scope="OACDesignSystem_d73471.Button" variant="primary" size="md" onClick="{{ togglePlay }}" hint-size="86px,38px"><span style="white-space:nowrap;">{{ playLabel }}</span></x-import>
+<div style="flex:1;display:flex;border:1px solid #DDD7CB;border-radius:3px;background:#FFFFFF;overflow:hidden;">
+<sc-for list="{{ speeds }}" as="sp" hint-placeholder-count="3"><button onClick="{{ sp.pick }}" style="all:unset;cursor:pointer;flex:1;text-align:center;padding:9px 0;font-size:13px;font-weight:500;background:{{ sp.bg }};color:{{ sp.fg }};">{{ sp.label }}</button></sc-for>
+</div>
+<button onClick="{{ toggleMirror }}" style="all:unset;cursor:pointer;padding:9px 10px;font-size:13px;font-weight:500;border:1px solid #DDD7CB;border-radius:3px;background:{{ mirrorBg }};color:#1F4A73;">Mirror</button>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;">
+<div style="font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:#66707A;border-bottom:1.5px solid #2F3B47;padding-bottom:6px;">What you'll hear</div>
+<sc-for list="{{ slotList }}" as="sl" hint-placeholder-count="4">
+<div style="display:flex;align-items:center;gap:12px;font-size:14px;">
+<div style="width:20px;font-family:var(--font-display);font-weight:600;color:#9E2A22;">{{ sl.count }}</div>
+<div style="flex:1;">{{ sl.text }}</div>
+</div>
+</sc-for>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;">
+<div style="font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:#66707A;border-bottom:1.5px solid #2F3B47;padding-bottom:6px;">Coach's notes</div>
+<sc-for list="{{ focus.cues }}" as="c" hint-placeholder-count="3"><div style="font-size:14px;line-height:1.5;text-wrap:pretty;">{{ c }}</div></sc-for>
+<div style="font-size:13px;line-height:1.5;color:#9E2A22;background:#F0D6D1;padding:10px 12px;border-radius:3px;text-wrap:pretty;">Watch out: {{ focus.fault }}</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isPractice }}">
+<div style="padding:8px 20px 24px;display:flex;flex-direction:column;gap:14px;">
+<div style="display:flex;align-items:flex-end;justify-content:space-between;">
+<div style="display:flex;flex-direction:column;gap:4px;">
+<div style="font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:#66707A;">Tempo ladder · {{ focus.name }}</div>
+<div style="display:flex;align-items:baseline;gap:8px;"><div style="font-family:var(--font-display);font-size:48px;line-height:1;font-weight:600;color:#1F4A73;font-variant-numeric:tabular-nums;">{{ bpm }}</div><div style="font-size:14px;color:#66707A;">BPM · goal {{ targetBpm }}</div></div>
+</div>
+<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+<div style="display:flex;gap:3px;"><sc-for list="{{ pips }}" as="p" hint-placeholder-count="8"><div style="width:9px;height:18px;border-radius:2px;background:{{ p.bg }};"></div></sc-for></div>
+<div style="font-size:12px;color:#66707A;">{{ streakText }}</div>
+</div>
+</div>
+<div style="font-size:15px;line-height:1.45;font-weight:500;color:{{ readColor }};min-height:22px;text-wrap:pretty;">{{ readout }}</div>
+<div style="background:#FFFFFF;border:1px solid #DDD7CB;border-radius:3px;padding:12px 12px 8px;display:flex;flex-direction:column;gap:6px;">
+<div style="display:flex;padding-left:34px;">
+<sc-for list="{{ slotList }}" as="sl" hint-placeholder-count="4"><div style="flex:1;text-align:center;display:flex;flex-direction:column;gap:1px;"><div style="font-family:var(--font-display);font-size:15px;font-weight:600;color:#9E2A22;">{{ sl.count }}</div><div style="font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:#66707A;">{{ sl.short }}</div></div></sc-for>
+</div>
+<sc-for list="{{ rows }}" as="r" hint-placeholder-count="6">
+<div style="display:flex;align-items:center;height:30px;opacity:{{ r.opacity }};">
+<div style="width:34px;font-size:10px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:{{ r.color }};">{{ r.status }}</div>
+<div style="position:relative;flex:1;height:100%;border-top:1px solid #EFEBE3;">
+<sc-for list="{{ bands }}" as="bd" hint-placeholder-count="4"><div style="position:absolute;top:4px;bottom:4px;left:{{ bd.left }};width:{{ bd.width }};background:#D6E4F1;opacity:0.55;border-radius:2px;"></div></sc-for>
+<sc-for list="{{ ticks }}" as="tk" hint-placeholder-count="4"><div style="position:absolute;top:3px;bottom:3px;left:{{ tk.left }};width:1px;background:#2F3B47;opacity:0.5;"></div></sc-for>
+<sc-for list="{{ r.dots }}" as="d" hint-placeholder-count="0"><div style="position:absolute;top:50%;left:{{ d.left }};width:11px;height:11px;margin:-5.5px 0 0 -5.5px;box-sizing:border-box;border-radius:50%;background:{{ d.bg }};border:2px solid {{ d.bd }};"></div></sc-for>
+</div>
+</div>
+</sc-for>
+<div style="display:flex;justify-content:space-between;padding:4px 0 0 34px;font-size:11px;color:#66707A;"><span>← early</span><span style="white-space:nowrap;">shaded = ±{{ windowMs }} ms</span><span>late →</span></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;">
+<div style="font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:#66707A;">Listening with</div>
+<div style="display:flex;border:1px solid #DDD7CB;border-radius:3px;background:#FFFFFF;overflow:hidden;">
+<sc-for list="{{ inputs }}" as="in" hint-placeholder-count="3"><button onClick="{{ in.pick }}" style="all:unset;cursor:pointer;flex:1;text-align:center;padding:9px 0;font-size:13px;font-weight:500;background:{{ in.bg }};color:{{ in.fg }};">{{ in.label }}</button></sc-for>
+</div>
+<div style="font-size:12px;line-height:1.5;color:#66707A;text-wrap:pretty;">{{ inputNote }}</div>
+<sc-if value="{{ hasMicErr }}"><div style="font-size:13px;color:#9E2A22;">{{ micErr }}</div></sc-if>
+</div>
+<sc-if value="{{ showPad }}">
+<button onPointerDown="{{ tapNow }}" style="all:unset;cursor:pointer;height:84px;border-radius:3px;border:1.5px dashed #1F4A73;background:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:#1F4A73;user-select:none;" style-active="background:#D6E4F1;">Tap here for each sound · or press space</button>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ isCall }}">
+<div style="padding:8px 20px 24px;display:flex;flex-direction:column;gap:14px;">
+<div style="display:flex;flex-direction:column;gap:6px;">
+<h1 style="margin:0;font-family:var(--font-display);font-size:30px;font-weight:600;color:#1F4A73;">Call and response</h1>
+<div style="font-size:15px;color:#66707A;text-wrap:pretty;">I play a bar of {{ focus.nameLower }}s. You answer with the same bar. Four rounds.</div>
+</div>
+<div style="background:#FFFFFF;border:1px solid #DDD7CB;border-radius:3px;overflow:hidden;">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:{{ phaseBg }};">
+<div style="font-size:13px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:{{ phaseFg }};white-space:nowrap;">{{ phaseLabel }}</div>
+<div style="display:flex;gap:4px;"><sc-for list="{{ roundPips }}" as="rp" hint-placeholder-count="4"><div style="width:22px;height:4px;border-radius:2px;background:{{ rp.bg }};"></div></sc-for></div>
+</div>
+<div style="padding:4px 6px 10px;">
+<x-import component-from-global-scope="HoofinFigure" step-id="{{ focusId }}" follow="{{ follow }}" autoplay="{{ autoplay }}" speed="{{ speed }}" hint-size="100%,270px"></x-import>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;border-top:1.5px solid #2F3B47;">
+<sc-for list="{{ crRounds }}" as="cr" hint-placeholder-count="0">
+<div style="display:flex;gap:14px;padding:12px 0;border-bottom:1px solid #DDD7CB;">
+<div style="width:22px;font-family:var(--font-display);font-size:15px;color:#9E2A22;">{{ cr.round }}</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:2px;">
+<div style="font-size:15px;font-weight:500;">{{ cr.heard }} of {{ cr.n }} sounds · {{ cr.avgText }}</div>
+<div style="font-size:13px;color:#66707A;text-wrap:pretty;">{{ cr.note }}</div>
+</div>
+</div>
+</sc-for>
+<sc-if value="{{ noRounds }}"><div style="padding:12px 0;font-size:13px;color:#66707A;">Your rounds will show up here.</div></sc-if>
+</div>
+<sc-if value="{{ showPad }}">
+<button onPointerDown="{{ tapNow }}" style="all:unset;cursor:pointer;height:72px;border-radius:3px;border:1.5px dashed #1F4A73;background:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:#1F4A73;user-select:none;" style-active="background:#D6E4F1;">Tap your answer here · or space</button>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ isCompare }}">
+<div style="padding:8px 20px 24px;display:flex;flex-direction:column;gap:16px;">
+<div style="display:flex;flex-direction:column;gap:6px;">
+<div style="font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:#9E2A22;">Then + now</div>
+<h1 style="margin:0;font-family:var(--font-display);font-size:30px;font-weight:600;color:#1F4A73;text-wrap:pretty;">Your {{ focus.nameLower }}, two weeks apart</h1>
+<div style="font-size:15px;color:#66707A;text-wrap:pretty;">Each dot is one sound. The closer to the line, the closer to the beat.</div>
+</div>
+<div style="display:flex;gap:16px;font-size:12px;color:#66707A;">
+<div style="display:flex;align-items:center;gap:6px;"><div style="width:10px;height:10px;border-radius:50%;box-sizing:border-box;border:1.5px solid #9E2A22;background:#F0D6D1;"></div>First recording · Sep 27</div>
+<div style="display:flex;align-items:center;gap:6px;"><div style="width:10px;height:10px;border-radius:50%;background:#1F4A73;"></div>Today</div>
+</div>
+<div style="background:#FFFFFF;border:1px solid #DDD7CB;border-radius:3px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;">
+<sc-for list="{{ cmpRows }}" as="cr" hint-placeholder-count="4">
+<div style="display:flex;align-items:center;gap:10px;height:40px;">
+<div style="width:62px;font-size:12px;line-height:1.2;"><span style="font-family:var(--font-display);font-weight:600;color:#9E2A22;">{{ cr.count }}</span> {{ cr.short }}</div>
+<div style="position:relative;flex:1;height:100%;">
+<div style="position:absolute;left:50%;top:4px;bottom:4px;width:1px;background:#2F3B47;"></div>
+<div style="position:absolute;left:0;right:0;top:50%;height:1px;background:#EFEBE3;"></div>
+<sc-for list="{{ cr.dots }}" as="d" hint-placeholder-count="0"><div style="position:absolute;top:{{ d.top }};left:{{ d.left }};width:9px;height:9px;margin:-4.5px 0 0 -4.5px;box-sizing:border-box;border-radius:50%;background:{{ d.bg }};border:1.5px solid {{ d.bd }};"></div></sc-for>
+</div>
+</div>
+</sc-for>
+<div style="display:flex;justify-content:space-between;padding-left:72px;font-size:11px;color:#66707A;"><span>−150 ms</span><span>beat</span><span>+150 ms</span></div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+<sc-for list="{{ stats }}" as="st" hint-placeholder-count="4">
+<div style="background:#FFFFFF;border:1px solid #DDD7CB;border-radius:3px;padding:12px;display:flex;flex-direction:column;gap:4px;">
+<div style="font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:#66707A;">{{ st.label }}</div>
+<div style="display:flex;align-items:baseline;gap:6px;"><span style="font-size:14px;color:#66707A;">{{ st.then }}</span><span style="font-size:13px;color:#66707A;">→</span><span style="font-family:var(--font-display);font-size:22px;font-weight:600;color:#1F4A73;">{{ st.now }}</span></div>
+</div>
+</sc-for>
+</div>
+<div style="font-size:12px;color:#66707A;">Recordings stay on this phone.</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isDone }}">
+<div style="padding:40px 24px;display:flex;flex-direction:column;gap:18px;">
+<div style="font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:#9E2A22;">Session complete</div>
+<h1 style="margin:0;font-family:var(--font-display);font-size:34px;line-height:1.15;font-weight:600;color:#1F4A73;text-wrap:pretty;">Nice work. That's {{ totalMin }} minutes of real practice.</h1>
+<div style="display:flex;flex-direction:column;border-top:1.5px solid #2F3B47;">
+<sc-for list="{{ doneLines }}" as="dl" hint-placeholder-count="3"><div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #DDD7CB;font-size:15px;"><span style="color:#66707A;">{{ dl.k }}</span><span style="font-weight:500;">{{ dl.v }}</span></div></sc-for>
+</div>
+<div style="font-size:15px;line-height:1.55;text-wrap:pretty;">Come back tomorrow and start where you left off. Two clean sessions at 120 BPM and the {{ focus.nameLower }} counts as solid.</div>
+</div>
+</sc-if>
+
+</div>
+
+<sc-if value="{{ hasToast }}">
+<div style="position:absolute;left:16px;right:16px;bottom:104px;background:#2F3B47;color:#F4F1EA;border-radius:3px;padding:12px 14px;font-size:14px;line-height:1.4;box-shadow:0 4px 12px rgba(0,0,0,0.18);">{{ toast }}</div>
+</sc-if>
+
+<div style="flex:none;padding:12px 20px calc(16px + env(safe-area-inset-bottom));border-top:1px solid #DDD7CB;background:#F4F1EA;display:flex;gap:10px;">
+<sc-if value="{{ hasCta2 }}"><div style="flex:none;"><x-import component-from-global-scope="OACDesignSystem_d73471.Button" variant="secondary" size="lg" onClick="{{ cta2 }}" style="white-space:nowrap;" hint-size="110px,46px"><span style="white-space:nowrap;">{{ cta2Label }}</span></x-import></div></sc-if>
+<div style="flex:1;min-width:0;"><x-import component-from-global-scope="OACDesignSystem_d73471.Button" variant="primary" size="lg" full-width="{{ true }}" onClick="{{ cta }}" style="white-space:nowrap;" hint-size="100%,46px"><span style="white-space:nowrap;">{{ ctaLabel }}</span></x-import></div>
+</div>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:844},&quot;screen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;builder&quot;,&quot;library&quot;,&quot;warmup&quot;,&quot;demo&quot;,&quot;practice&quot;,&quot;call&quot;,&quot;compare&quot;,&quot;done&quot;],&quot;default&quot;:&quot;builder&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;staticMode&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;inputMode&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;mic&quot;,&quot;tap&quot;,&quot;demo&quot;],&quot;default&quot;:&quot;demo&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Listening&quot;},&quot;timingWindow&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[30,50,80],&quot;default&quot;:50,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Listening&quot;},&quot;cleanTarget&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;min&quot;:3,&quot;max&quot;:12,&quot;default&quot;:8,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Listening&quot;}}">
+class Component extends DCLogic {
+  state = this.init();
+  init() {
+    const p = this.props || {};
+    return {
+      screen: p.screen ?? 'builder', focusId: 'flap',
+      blocks: [
+        { id: 'warmup', name: 'Warm-up', min: 4, desc: 'Ankle rolls, calf raises, heel-toe rocks' },
+        { id: 'demo', name: 'Sounds', min: 6, desc: "Watch and hear today's step, slowly" },
+        { id: 'practice', name: 'Rhythm', min: 7, desc: 'Tempo ladder with timing feedback' },
+        { id: 'call', name: 'Call and response', min: 4, desc: 'Hear a bar, answer it with your feet' },
+        { id: 'compare', name: 'Wrap-up', min: 2, desc: 'Compare with your first recording' }
+      ],
+      warmLeft: 240, warmRunning: false, warmChecks: [false, false, false],
+      playing: false, speed: 0.5, mirror: false,
+      input: p.inputMode ?? 'demo', bpm: 60, listening: false, reps: [], streak: 0, cleanTotal: 0, topBpm: 60,
+      toast: null, micErr: null, beat: 0,
+      crRunning: false, crRounds: [], crPhase: 'idle', crRound: -1, ready: !!window.Hoofin
+    };
+  }
+  get H() { return window.Hoofin; }
+  get win() { return this.props.timingWindow ?? 50; }
+  get target() { return this.props.cleanTarget ?? 8; }
+  componentDidMount() {
+    if (!window.React) window.React = React;
+    const go = () => { this.setState({ ready: true }); this.seed(); };
+    if (window.Hoofin) go(); else { this._r = go; window.addEventListener('hoofin-ready', go); this._poll = setInterval(() => { if (window.Hoofin) { clearInterval(this._poll); go(); } }, 100); }
+    this._key = e => {
+      if (e.code === 'Space' && this.state.input === 'tap' && (this.state.screen === 'practice' || this.state.screen === 'call')) { e.preventDefault(); this.tapNow(); }
+    };
+    window.addEventListener('keydown', this._key);
+  }
+  componentWillUnmount() { this.stopAll(); window.removeEventListener('keydown', this._key); if (this._r) window.removeEventListener('hoofin-ready', this._r); clearInterval(this._poll); }
+  step() { return this.H.STEPS[this.state.focusId]; }
+  sortedSounds() { return this.step().sounds.slice().sort((a, b) => a.t - b.t); }
+
+  seed() {
+    if (this._seeded) return; this._seeded = true;
+    const H = this.H, n = this.sortedSounds().length;
+    this.baseline = Array.from({ length: n }, () => Array.from({ length: 7 }, () => (Math.random() < 0.2 ? null : H.gauss(48, 38))));
+    this.sampleToday = Array.from({ length: n }, () => Array.from({ length: 7 }, () => H.gauss(16, -4)));
+    this.todayOffs = Array.from({ length: n }, () => []);
+    this.todayMiss = 0; this.todayCount = 0;
+    if (this.props.staticMode) {
+      const reps = [];
+      for (let k = 11; k >= 6; k--) {
+        const slots = Array.from({ length: n }, () => (Math.random() < 0.05 ? null : H.gauss(k > 9 ? 16 : 30, -5)));
+        if (k === 8) slots[1] = null;
+        const ok = slots.every(o => o != null && Math.abs(o) <= this.win);
+        reps.push({ key: 's' + k, k, bpm: 65, slots, extras: k === 7 ? 1 : 0, done: true, clean: ok && k !== 7 });
+      }
+      this.setState({ reps, bpm: 65, streak: 5, cleanTotal: 14, topBpm: 65, crRounds: [
+        { round: 1, heard: 8, n: 8, avgText: '+22 ms', note: 'All there, a touch late. Listen for the 1.' },
+        { round: 2, heard: 7, n: 8, avgText: '+9 ms', note: 'Missed 1. Keep the feet moving even if you lose it.' },
+        { round: 3, heard: 8, n: 8, avgText: '−3 ms', note: 'Spot on. Every sound, right in time.' }
+      ], crPhase: 'answer', crRound: 3 });
+    }
+  }
+
+  stopAll() {
+    const H = this.H; if (!H) return;
+    H.transport.stop(); H.mic.stop();
+    clearInterval(this._tick); clearInterval(this._warm);
+    this.setState({ listening: false, playing: false, crRunning: false, warmRunning: false });
+  }
+  goTo(screen) { this.stopAll(); this.setState({ screen, toast: null }); }
+  next() {
+    const order = ['warmup', 'demo', 'practice', 'call', 'compare', 'done'];
+    const s = this.state.screen;
+    if (s === 'builder') return this.goTo('warmup');
+    if (s === 'done') return this.goTo('builder');
+    this.goTo(order[order.indexOf(s) + 1]);
+  }
+  showToast(t) { this.setState({ toast: t }); clearTimeout(this._toastT); this._toastT = setTimeout(() => this.setState({ toast: null }), 2600); }
+
+  // warm-up
+  toggleWarm() {
+    if (this.state.warmRunning) { clearInterval(this._warm); this.setState({ warmRunning: false }); return; }
+    this.setState({ warmRunning: true });
+    this._warm = setInterval(() => { const l = this.state.warmLeft - 1; if (l <= 0) { clearInterval(this._warm); this.setState({ warmLeft: 0, warmRunning: false }); } else this.setState({ warmLeft: l }); }, 1000);
+  }
+
+  // demo
+  startDemo(speed, mirror) {
+    this.H.transport.start({ bpm: Math.round(96 * speed), stepId: this.state.focusId, mirror, clicks: true, taps: true, countIn: 0 });
+    this.setState({ playing: true });
+  }
+  togglePlay() { if (this.state.playing) { this.H.transport.stop(); this.setState({ playing: false }); } else this.startDemo(this.state.speed, this.state.mirror); }
+
+  // input
+  ensureInput() {
+    const H = this.H;
+    if (this.state.input === 'mic' && !H.mic.on) {
+      H.mic.start(o => this.onOnset(o.time)).catch(() => this.setState({ micErr: "Couldn't reach the microphone, so I switched to the tap pad.", input: 'tap' }));
+    }
+  }
+  pickInput(v) {
+    if (v !== 'mic') this.H.mic.stop();
+    this.setState({ input: v, micErr: null }, () => { if (this.state.listening || this.state.crRunning) this.ensureInput(); });
+  }
+  tapNow() {
+    const c = this.H.audio.ctx; if (!c || !this.H.transport.running) return;
+    this.onOnset(c.currentTime - (c.outputLatency || 0) - 0.01);
+  }
+  onOnset(time) {
+    const H = this.H, T = H.transport; if (!T.running) return;
+    const step = this.step(), b = T.beatAt(time);
+    const cands = H.soundBeats(step, b - 0.3, b + 0.3);
+    if (!cands.length) return;
+    let near = cands[0]; for (const c of cands) if (Math.abs(c.beat - b) < Math.abs(near.beat - b)) near = c;
+    const off = ((b - near.beat) * 60000) / T.bpm;
+    if (this.state.screen === 'practice') {
+      if (b < -0.75) return;
+      const rep = this.getRep(near.rep); if (!rep || rep.done) return;
+      const i = this.sortedSounds().indexOf(near.sound);
+      if (rep.slots[i] != null) rep.extras++; else rep.slots[i] = off;
+    } else if (this.state.screen === 'call') {
+      const m = (((near.beat + 0.5) % 8) + 8) % 8; if (m < 4 || near.beat < 0) return;
+      const r = Math.floor((near.beat + 0.5) / 8);
+      const d = (this.crData[r] = this.crData[r] || { offs: {}, extras: 0 });
+      if (d.offs[near.beat] != null) d.extras++; else d.offs[near.beat] = off;
+    }
+  }
+  dancer(b) {
+    const H = this.H, T = H.transport, step = this.step();
+    for (const ev of H.soundBeats(step, this._gen, b)) {
+      if (ev.beat < -0.5) continue;
+      if (this.state.screen === 'call') { const m = (((ev.beat + 0.5) % 8) + 8) % 8; if (m < 4) continue; }
+      if (Math.random() < 0.03) continue;
+      this.onOnset(T.timeAt(ev.beat) + H.gauss(this._sd, -6) / 1000);
+      if (ev.sound.weight && Math.random() < 0.025) this.onOnset(T.timeAt(ev.beat + 0.17));
+    }
+    this._gen = b;
+  }
+
+  // practice
+  getRep(k) {
+    if (k < 0) return null;
+    const key = this._run + '-' + k;
+    if (!this._reps[key]) this._reps[key] = { key, k, bpm: this.H.transport.bpm, slots: Array(this.sortedSounds().length).fill(null), extras: 0, done: false, clean: false };
+    return this._reps[key];
+  }
+  startPractice(bpm) {
+    const H = this.H;
+    this._run = (this._run || 0) + 1; this._reps = this._reps || {}; this._gen = -0.6; this._sd = this._sd || 34;
+    H.transport.start({ bpm, stepId: this.state.focusId, clicks: true, taps: false, countIn: 4 });
+    this.setState({ listening: true, bpm, topBpm: Math.max(this.state.topBpm, bpm), streak: 0 });
+    this.ensureInput();
+    clearInterval(this._tick);
+    this._tick = setInterval(() => this.practiceTick(), 40);
+  }
+  practiceTick() {
+    const H = this.H, T = H.transport; if (!T.running) return;
+    const b = T.beatNow(), step = this.step();
+    if (this.state.input === 'demo') this.dancer(b);
+    const kNow = Math.floor((b + step.phase) / step.cycle);
+    for (let k = 0; k <= kNow; k++) this.getRep(k);
+    let streak = this.state.streak, clean = this.state.cleanTotal, bump = false;
+    Object.values(this._reps).filter(r => r.key.startsWith(this._run + '-') && !r.done).forEach(r => {
+      const end = (r.k + 1) * step.cycle - step.phase;
+      if (b < end + 0.3) return;
+      r.done = true;
+      const miss = r.slots.filter(o => o == null).length;
+      r.clean = miss === 0 && r.extras === 0 && r.slots.every(o => Math.abs(o) <= this.win);
+      r.slots.forEach((o, i) => { if (o != null) this.todayOffs[i].push(o); });
+      this.todayMiss += miss; this.todayCount += r.slots.length;
+      if (r.clean) { streak++; clean++; this._sd = Math.max(12, this._sd - 1.6); } else streak = 0;
+      if (streak >= this.target) bump = true;
+    });
+    const reps = Object.values(this._reps).sort((a, b2) => (a.key < b2.key ? 1 : a.key > b2.key ? -1 : b2.k - a.k)).filter(r => r.done || r.slots.some(o => o != null));
+    reps.sort((a, b2) => (b2.key.split('-')[0] - a.key.split('-')[0]) || (b2.k - a.k));
+    this.setState({ beat: b, reps: reps.slice(0, 6).map(r => Object.assign({}, r, { slots: r.slots.slice() })), streak, cleanTotal: clean });
+    if (bump) {
+      const tgt = step.targetBpm, nb = Math.min(this.state.bpm + 5, tgt);
+      if (this.state.bpm >= tgt) { this.showToast(`${this.target} clean at full tempo. That ${step.name.toLowerCase()} is sounding solid.`); this.setState({ streak: 0 }); }
+      else { this.showToast(`${this.target} clean in a row. Moving you up to ${nb} BPM.`); this.startPractice(nb); }
+    }
+  }
+  togglePractice() { if (this.state.listening) { this.H.transport.stop(); this.H.mic.stop(); clearInterval(this._tick); this.setState({ listening: false }); } else this.startPractice(this.state.bpm); }
+
+  // call and response
+  startCall() {
+    const H = this.H; this.crData = {}; this._gen = -0.6; this._sd = Math.min(this._sd || 26, 26);
+    H.transport.start({ bpm: Math.max(60, this.state.bpm), stepId: this.state.focusId, clicks: true, taps: true, period: 8, len: 4, countIn: 4 });
+    this.setState({ crRunning: true, crRounds: [], crPhase: 'count', crRound: 0 });
+    this.ensureInput();
+    clearInterval(this._tick);
+    this._tick = setInterval(() => this.callTick(), 40);
+  }
+  callTick() {
+    const H = this.H, T = H.transport; if (!T.running) return;
+    const b = T.beatNow(), step = this.step();
+    if (this.state.input === 'demo') this.dancer(b);
+    const m = (((b + 0.5) % 8) + 8) % 8, r = Math.floor((b + 0.5) / 8);
+    const phase = b < -0.5 ? 'count' : m < 4 ? 'listen' : 'answer';
+    const rounds = this.state.crRounds.slice();
+    if (rounds.length < 4 && b > rounds.length * 8 + 7.8) {
+      const i = rounds.length, d = this.crData[i] || { offs: {}, extras: 0 };
+      const n = H.soundBeats(step, i * 8 + 3.5, i * 8 + 7.5).length;
+      const offs = Object.values(d.offs), heard = offs.length;
+      const avg = heard ? offs.reduce((a, c) => a + c, 0) / heard : 0;
+      let note;
+      if (d.extras) note = 'An extra sound snuck in. Check that the heel stays up.';
+      else if (heard < n) note = `Missed ${n - heard}. Keep the feet moving even if you lose it.`;
+      else if (Math.abs(avg) < 15) note = 'Spot on. Every sound, right in time.';
+      else note = avg < 0 ? 'All there, a touch early. Relax into it.' : 'All there, a touch late. Listen for the 1.';
+      rounds.push({ round: i + 1, heard, n, avgText: heard ? (avg >= 0 ? '+' : '−') + Math.abs(Math.round(avg)) + ' ms' : '—', note });
+      if (rounds.length >= 4) { T.stop(); H.mic.stop(); clearInterval(this._tick); this.setState({ crRounds: rounds, crRunning: false, crPhase: 'done' }); return; }
+    }
+    this.setState({ crRounds: rounds, crPhase: phase, crRound: Math.max(0, r), beat: b });
+  }
+  toggleCall() { if (this.state.crRunning) this.stopAll(); else this.startCall(); }
+
+  renderVals() {
+    const s = this.state, H = this.H, scr = s.screen;
+    const inSession = ['warmup', 'demo', 'practice', 'call', 'compare'].includes(scr);
+    const C = { navy: '#1F4A73', soft: '#D6E4F1', red: '#9E2A22', redSoft: '#F0D6D1', line: '#DDD7CB', mute: '#66707A', ink: '#2F3B47' };
+    const blockIdx = s.blocks.findIndex(b => b.id === scr);
+    const totalMin = s.blocks.reduce((a, b) => a + b.min, 0);
+    const v = {
+      inSession, notInSession: !inSession,
+      isBuilder: scr === 'builder', isLibrary: scr === 'library', isWarmup: scr === 'warmup', isDemo: scr === 'demo',
+      isPractice: scr === 'practice', isCall: scr === 'call', isCompare: scr === 'compare', isDone: scr === 'done',
+      totalMin, focusId: s.focusId, mirror: s.mirror, speed: s.speed,
+      endSession: () => this.goTo('builder'),
+      blockLabel: blockIdx >= 0 ? `${blockIdx + 1} of 5 · ${s.blocks[blockIdx].name}` : '',
+      segs: s.blocks.map((b, i) => ({ bg: i < blockIdx ? C.navy : i === blockIdx ? C.red : C.line })),
+      blocks: s.blocks.map((b, i) => ({ num: String(i + 1).padStart(2, '0'), name: b.name, desc: b.desc, min: b.min,
+        minus: () => this.setState(st => ({ blocks: st.blocks.map(x => (x.id === b.id ? Object.assign({}, x, { min: Math.max(1, x.min - 1) }) : x)) })),
+        plus: () => this.setState(st => ({ blocks: st.blocks.map(x => (x.id === b.id ? Object.assign({}, x, { min: Math.min(15, x.min + 1) }) : x)) })) })),
+      openLibrary: () => this.goTo('library'), backToBuilder: () => this.goTo('builder'),
+      hasToast: !!s.toast, toast: s.toast, hasMicErr: !!s.micErr, micErr: s.micErr,
+      library: [], slotList: [], rows: [], bands: [], ticks: [], pips: [], inputs: [], crRounds: s.crRounds, roundPips: [], cmpRows: [], stats: [], doneLines: [], warmItems: [], speeds: [],
+      focus: { name: '', count: '', built: '', builtList: [], cues: [], fault: '', nameLower: '' }
+    };
+    // footer
+    const ctas = {
+      builder: ['Start session'], library: ['Back to today'], warmup: ["I'm warm. Next"], demo: ['Ready to practice'],
+      practice: ['Next block'], call: ['Wrap up'], compare: ['Finish session'], done: ['Back to today']
+    };
+    v.ctaLabel = ctas[scr][0];
+    v.cta = scr === 'library' ? () => this.goTo('builder') : () => this.next();
+    v.hasCta2 = scr === 'practice' || scr === 'call';
+    v.cta2Label = scr === 'practice' ? (s.listening ? 'Stop' : 'Start') : s.crRunning ? 'Stop' : s.crRounds.length ? 'Go again' : 'Start';
+    v.cta2 = scr === 'practice' ? () => this.togglePractice() : () => this.toggleCall();
+    if (!H || !s.ready) return v;
+
+    const step = H.STEPS[s.focusId], slots = H.slots(step);
+    v.focus = { name: step.name, nameLower: step.name.toLowerCase(), count: step.count, built: step.builtFrom.join(' + '), builtList: step.builtFrom.filter((x, i, a) => a.indexOf(x) === i), cues: step.cues, fault: step.faults[0] };
+    v.slotList = slots.map(sl => ({ count: sl.count, short: sl.foot + ' ' + sl.action, text: `${sl.foot === 'R' ? 'Right' : 'Left'} foot ${sl.action}, on the ${sl.part}` }));
+    v.library = H.LIBRARY.map(g => ({
+      group: g.group, summary: g.items.filter(i => i[1] === 'solid').length + ' of ' + g.items.length + ' solid',
+      items: g.items.map(([name, st, id, note]) => {
+        const pickable = !!id, isFocus = id === s.focusId;
+        const map = { solid: ['Solid', C.navy, C.soft], learning: ['Learning', C.red, C.redSoft], new: ['New', C.ink, '#E5DECC'], locked: ['Locked', C.mute, '#EFEBE3'] };
+        const m = isFocus ? ['Focus', '#FFFFFF', C.navy] : map[st];
+        return { name, status: m[0], color: m[1], bg: m[2], hasNote: !!note || (st === 'learning' && !pickable), note: note || (st === 'learning' && !pickable ? 'Figure coming in the next build' : ''),
+          cursor: pickable ? 'pointer' : 'default', opacity: st === 'locked' ? 0.7 : 1,
+          pick: () => { if (!pickable) return; this.H.transport.stop(); this._reps = {}; this.setState({ focusId: id, screen: 'builder', bpm: 60, reps: [], streak: 0 }); } };
+      })
+    }));
+    // warm-up
+    const items = [['Ankle rolls', '8 each direction, each foot'], ['Calf raises', '10 slow ones, hold the top'], ['Heel-toe rocks', '16, easy and quiet']];
+    v.warmItems = items.map(([name, detail], i) => ({ name, detail, bg: s.warmChecks[i] ? C.navy : '#FFFFFF', mark: s.warmChecks[i] ? '✓' : '', toggle: () => this.setState(st => ({ warmChecks: st.warmChecks.map((c, j) => (j === i ? !c : c)) })) }));
+    v.warmClock = Math.floor(s.warmLeft / 60) + ':' + String(s.warmLeft % 60).padStart(2, '0');
+    v.warmBtn = s.warmRunning ? 'Pause' : s.warmLeft < 240 ? 'Resume' : 'Start timer';
+    v.toggleWarm = () => this.toggleWarm();
+    // demo
+    v.follow = !this.props.staticMode; v.autoplay = !!this.props.staticMode;
+    v.playLabel = s.playing ? 'Pause' : 'Play';
+    v.togglePlay = () => this.togglePlay();
+    v.speeds = [0.5, 0.75, 1].map(x => ({ label: x * 100 + '%', bg: s.speed === x ? C.soft : '#FFFFFF', fg: s.speed === x ? C.navy : C.mute, pick: () => { this.setState({ speed: x }); if (s.playing) this.startDemo(x, s.mirror); } }));
+    v.mirrorBg = s.mirror ? C.soft : '#FFFFFF';
+    v.toggleMirror = () => { const m = !s.mirror; this.setState({ mirror: m }); if (s.playing) this.startDemo(s.speed, m); };
+    // practice grid
+    const n = slots.length, colW = 100 / n, scale = colW * 0.45 / 120;
+    const pos = (i, off) => i * colW + colW / 2 + Math.max(-120, Math.min(120, off)) * scale;
+    v.ticks = slots.map((_, i) => ({ left: pos(i, 0) + '%' }));
+    v.bands = slots.map((_, i) => ({ left: pos(i, -this.win) + '%', width: 2 * this.win * scale + '%' }));
+    v.rows = s.reps.map((r, ri) => {
+      const miss = r.slots.filter(o => o == null).length;
+      let status = '', color = C.mute;
+      if (r.done) {
+        if (r.clean) { status = 'Clean'; color = C.navy; }
+        else if (r.extras) { status = '+' + r.extras; color = C.red; }
+        else if (miss) { status = 'Miss'; color = C.red; }
+        else { status = 'Time'; color = C.red; }
+      }
+      const dots = [];
+      r.slots.forEach((o, i) => {
+        if (o != null) { const ok = Math.abs(o) <= this.win; dots.push({ left: pos(i, o) + '%', bg: ok ? C.navy : C.red, bd: ok ? C.navy : C.red }); }
+        else if (r.done) dots.push({ left: pos(i, 0) + '%', bg: '#FFFFFF', bd: C.red });
+      });
+      return { status, color, dots, opacity: Math.max(0.65, 1 - ri * 0.07) };
+    });
+    v.pips = Array.from({ length: this.target }, (_, i) => ({ bg: i < s.streak ? C.navy : C.line }));
+    v.streakText = `${s.streak} of ${this.target} clean in a row`;
+    v.bpm = s.bpm; v.targetBpm = step.targetBpm; v.windowMs = this.win;
+    const recent = s.reps.filter(r => r.done).slice(0, 2).flatMap(r => r.slots.filter(o => o != null));
+    if (!s.listening && !recent.length) { v.readout = 'Press Start. You get four clicks, then dance on the fifth.'; v.readColor = C.ink; }
+    else if (!recent.length) { v.readout = "Dance along with the click. I'm listening."; v.readColor = C.ink; }
+    else {
+      const avg = recent.reduce((a, c) => a + c, 0) / recent.length;
+      if (avg < -15) { v.readout = `Rushing a little (${Math.round(avg)} ms). Let the click come to you.`; v.readColor = C.red; }
+      else if (avg > 15) { v.readout = `Dragging a little (+${Math.round(avg)} ms). Get the brush started earlier.`; v.readColor = C.red; }
+      else { v.readout = 'Right on the beat. Keep it there.'; v.readColor = C.navy; }
+    }
+    v.inputs = [['mic', 'Microphone'], ['tap', 'Tap pad'], ['demo', 'Demo dancer']].map(([id, label]) => ({ label, bg: s.input === id ? C.soft : '#FFFFFF', fg: s.input === id ? C.navy : C.mute, pick: () => this.pickInput(id) }));
+    v.inputNote = { mic: 'Raw mic input, no noise suppression. Wired headphones keep the click out of the mic.', tap: 'For trying the prototype at a desk: one tap per sound.', demo: 'A simulated dancer who tightens up as they go, so you can watch the tempo ladder work.' }[s.input];
+    v.showPad = s.input === 'tap';
+    v.tapNow = () => this.tapNow();
+    // call and response
+    const phases = { idle: ['Press Start', '#EFEBE3', C.ink], count: ['Count in · 4 clicks', '#EFEBE3', C.ink], listen: ['Listen', C.soft, C.navy], answer: ['Your turn', C.redSoft, C.red], done: ['Four rounds done', '#EFEBE3', C.ink] };
+    const ph = phases[s.crRunning || this.props.staticMode ? s.crPhase : s.crRounds.length ? 'done' : 'idle'];
+    v.phaseLabel = ph[0]; v.phaseBg = ph[1]; v.phaseFg = ph[2];
+    v.roundPips = [0, 1, 2, 3].map(i => ({ bg: i < s.crRounds.length ? C.navy : i === s.crRound && (s.crRunning || this.props.staticMode) ? C.red : C.line }));
+    v.noRounds = !s.crRounds.length;
+    // compare
+    const useToday = this.todayOffs && this.todayOffs[0] && this.todayOffs[0].length >= 4;
+    const today = useToday ? this.todayOffs.map(a => a.slice(-7)) : this.sampleToday || [];
+    const base = this.baseline || [];
+    const cx = o => 50 + Math.max(-150, Math.min(150, o)) / 150 * 48 + '%';
+    v.cmpRows = slots.map((sl, i) => ({ count: sl.count, short: sl.foot + ' ' + sl.action, dots: [
+      ...(base[i] || []).filter(o => o != null).map((o, j) => ({ left: cx(o), top: 30 + (j % 3) * 8 + '%', bg: C.redSoft, bd: C.red })),
+      ...(today[i] || []).map((o, j) => ({ left: cx(o), top: 46 + (j % 3) * 8 + '%', bg: C.navy, bd: C.navy }))] }));
+    const mean = arr => { const f = arr.flat().filter(o => o != null); return f.length ? f.reduce((a, c) => a + c, 0) / f.length : 0; };
+    const fmt = x => (x >= 0 ? '+' : '−') + Math.abs(Math.round(x)) + ' ms';
+    const baseMiss = base.flat().filter(o => o == null).length, baseTotal = base.flat().length;
+    v.stats = [
+      { label: 'Average timing', then: fmt(mean(base)), now: fmt(mean(today)) },
+      { label: 'Missed sounds', then: baseMiss + '/' + baseTotal, now: useToday ? this.todayMiss + '/' + this.todayCount : '1/' + baseTotal },
+      { label: 'Clean reps', then: '0', now: String(useToday || this.props.staticMode ? s.cleanTotal : 11) },
+      { label: 'Top tempo', then: '60', now: String(useToday || this.props.staticMode ? s.topBpm : 70) }
+    ];
+    v.doneLines = [{ k: 'Focus step', v: step.name }, { k: 'Clean reps', v: String(s.cleanTotal) }, { k: 'Top clean tempo', v: s.topBpm + ' BPM' }];
+    return v;
+  }
+}
+</script>
+</body>
+</html>
